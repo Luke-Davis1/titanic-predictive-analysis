@@ -1,8 +1,9 @@
 # Import libraries
 from sklearn import preprocessing, tree
 from sklearn.metrics import accuracy_score, confusion_matrix, mean_squared_error
-from sklearn.neural_network import MLPClassifier
+from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.linear_model import LinearRegression
+from sklearn.tree import DecisionTreeRegressor
 import pandas as pd
 import warnings
 from sklearn.exceptions import ConvergenceWarning
@@ -60,7 +61,6 @@ y_pred = decision_tree.predict(X_test)
 accuracy_decision_tree = accuracy_score(y_test, y_pred)
 cm_decision_tree = confusion_matrix(y_test, y_pred)
 correct_predictions_decision_tree = cm_decision_tree.diagonal().sum()
-mse_decision_tree = mean_squared_error(y_test, y_pred)
 
 # Build a neural network for predicting survived
 neural_net_classifier = MLPClassifier()
@@ -70,7 +70,6 @@ y_pred = neural_net_classifier.predict(X_test)
 accuracy_neural_net = accuracy_score(y_test, y_pred)
 cm_neural_net = confusion_matrix(y_test, y_pred)
 correct_predictions_neural_net = cm_neural_net.diagonal().sum()
-mse_neural_net = mean_squared_error(y_test, y_pred)
 
 # Print results
 print("*" * 80)
@@ -88,7 +87,6 @@ print(tabulate(table, headers=headers, tablefmt='grid'))
 print("\nOther metrics:")
 decsision_tree_results = [
     ["Accuracy", accuracy_decision_tree],
-    ["MSE", mse_decision_tree]
 ]
 print(tabulate(decsision_tree_results, tablefmt="pretty"))
 
@@ -100,7 +98,6 @@ print(tabulate(table, headers=headers, tablefmt='grid'))
 print("\nOther metrics:")
 neural_net_results = [
     ["Accuracy", f"{accuracy_neural_net:.2f}"],
-    ["MSE", f"{mse_neural_net:.2f}"]
 ]
 print(tabulate(neural_net_results, tablefmt="pretty"))
 print("\n" + "*" * 80)
@@ -109,6 +106,8 @@ print("\n" + "*" * 80)
 
 
 ########################### AGE PREDICTION #####################################
+
+# LINEAR REGRESSION
 
 # Build a linear regression to predict age
 X = df_train_age.drop(columns=["Age"])
@@ -124,13 +123,30 @@ linear_reg_classifier.fit(X, y)
 y_pred = linear_reg_classifier.predict(X_test)
 mse_linear_reg = mean_squared_error(y_test, y_pred)
 
-# Build a decision tree to predict age
+# DECISION TREE
 
+# Build a decision tree to predict age
+decision_tree_regressor = DecisionTreeRegressor()
+decision_tree_regressor.fit(X, y)
+
+# predict and evaluate
+y_pred = decision_tree_regressor.predict(X_test)
+mse_decision_tree = mean_squared_error(y_test, y_pred)
+
+# NEURAL NETWORK
+
+# Build a neural network to predict age
+neural_net_regressor = MLPRegressor()
+neural_net_regressor.fit(X, y)
+
+# predict and evaluate
+y_pred = neural_net_regressor.predict(X_test)
+mse_neural_net = mean_squared_error(y_test, y_pred)
 
 # print results
-print("\n"+ "*" * 80)
 print(" " * 30 + "AGE PREDICTION\n")
-print(f"Linear Regression MSE: {mse_linear_reg}")
-
+print(f"Linear Regression MSE: " + f"{mse_linear_reg:.2f}")
+print(f"Decision Tree MSE: " + f"{mse_decision_tree:.2f}")
+print(f"Neural Network MSE: " + f"{mse_neural_net:.2f}")
 print("\n" + "*" * 80)
 
