@@ -1,9 +1,10 @@
 # Import libraries
 from sklearn import preprocessing, tree
-from sklearn.metrics import accuracy_score, confusion_matrix, mean_squared_error
+from sklearn.metrics import accuracy_score, confusion_matrix, mean_squared_error, classification_report
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.tree import DecisionTreeRegressor
+from sklearn.preprocessing import StandardScaler
 import pandas as pd
 import warnings
 from sklearn.exceptions import ConvergenceWarning
@@ -50,7 +51,7 @@ df_test_age = df_test_age.apply(preprocessing.LabelEncoder().fit_transform)
 X = df_train_survival.drop(columns=["Survived?"])
 y = df_train_survival["Survived?"]
 
-decision_tree = tree.DecisionTreeClassifier(criterion='entropy')
+decision_tree = tree.DecisionTreeClassifier(criterion='entropy', random_state=42)
 decision_tree = decision_tree.fit(X, y)
 
 X_test = df_test_survival.drop(columns=["Survived?"])
@@ -61,15 +62,31 @@ y_pred = decision_tree.predict(X_test)
 accuracy_decision_tree = accuracy_score(y_test, y_pred)
 cm_decision_tree = confusion_matrix(y_test, y_pred)
 correct_predictions_decision_tree = cm_decision_tree.diagonal().sum()
+classification_report_tree = classification_report(y_test, y_pred)
+
+# Data needs to be scaled for neural network
+scaler = StandardScaler()
+
+# Fit only to the training data
+scaler.fit(X)
+
+# Transform both the training and test data
+X_train_scaled = scaler.transform(X)
+X_test_scaled = scaler.transform(X_test)
+
+# Convert the scaled data back to DataFrames to preserve feature names
+X_train_scaled = pd.DataFrame(X_train_scaled, columns=X.columns)
+X_test_scaled = pd.DataFrame(X_test_scaled, columns=X_test.columns)
 
 # Build a neural network for predicting survived
-neural_net_classifier = MLPClassifier()
-neural_net_classifier.fit(X, y)
+neural_net_classifier = MLPClassifier(random_state=42)
+neural_net_classifier.fit(X_train_scaled, y)
 
-y_pred = neural_net_classifier.predict(X_test)
+y_pred = neural_net_classifier.predict(X_test_scaled)
 accuracy_neural_net = accuracy_score(y_test, y_pred)
 cm_neural_net = confusion_matrix(y_test, y_pred)
 correct_predictions_neural_net = cm_neural_net.diagonal().sum()
+classification_report_neural_net = classification_report(y_test, y_pred)
 
 # Print results
 print("*" * 80)
@@ -89,6 +106,7 @@ decsision_tree_results = [
     ["Accuracy", accuracy_decision_tree],
 ]
 print(tabulate(decsision_tree_results, tablefmt="pretty"))
+print(f'\nClassfication Report:\n{classification_report_tree}')
 
 print("\n" + " " * 30 + "NEURAL NETWORK RESULTS")
 headers = ['Predicted 0', 'Predicted 1']
@@ -100,10 +118,10 @@ neural_net_results = [
     ["Accuracy", f"{accuracy_neural_net:.2f}"],
 ]
 print(tabulate(neural_net_results, tablefmt="pretty"))
+
+print(f'\nClassfication Report:\n{classification_report_neural_net}')
+
 print("\n" + "*" * 80)
-
-# TODO: Still need to print the classification report
-
 
 ########################### AGE PREDICTION #####################################
 
@@ -126,7 +144,7 @@ mse_linear_reg = mean_squared_error(y_test, y_pred)
 # DECISION TREE
 
 # Build a decision tree to predict age
-decision_tree_regressor = DecisionTreeRegressor()
+decision_tree_regressor = DecisionTreeRegressor(random_state=42)
 decision_tree_regressor.fit(X, y)
 
 # predict and evaluate
@@ -135,12 +153,26 @@ mse_decision_tree = mean_squared_error(y_test, y_pred)
 
 # NEURAL NETWORK
 
+# Data needs to be scaled for neural network
+scaler = StandardScaler()
+
+# Fit only to the training data
+scaler.fit(X)
+
+# Transform both the training and test data
+X_train_scaled = scaler.transform(X)
+X_test_scaled = scaler.transform(X_test)
+
+# Convert the scaled data back to DataFrames to preserve feature names
+X_train_scaled = pd.DataFrame(X_train_scaled, columns=X.columns)
+X_test_scaled = pd.DataFrame(X_test_scaled, columns=X_test.columns)
+
 # Build a neural network to predict age
-neural_net_regressor = MLPRegressor()
-neural_net_regressor.fit(X, y)
+neural_net_regressor = MLPRegressor(max_iter=1000, random_state=42)
+neural_net_regressor.fit(X_train_scaled, y)
 
 # predict and evaluate
-y_pred = neural_net_regressor.predict(X_test)
+y_pred = neural_net_regressor.predict(X_test_scaled)
 mse_neural_net = mean_squared_error(y_test, y_pred)
 
 # print results
