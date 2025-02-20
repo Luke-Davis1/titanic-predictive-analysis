@@ -79,7 +79,7 @@ X_train_scaled = pd.DataFrame(X_train_scaled, columns=X.columns)
 X_test_scaled = pd.DataFrame(X_test_scaled, columns=X_test.columns)
 
 # Build a neural network for predicting survived
-neural_net_classifier = MLPClassifier(random_state=42)
+neural_net_classifier = MLPClassifier(max_iter=1000, random_state=42)
 neural_net_classifier.fit(X_train_scaled, y)
 
 y_pred = neural_net_classifier.predict(X_test_scaled)
